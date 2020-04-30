@@ -13,7 +13,7 @@ certManager:
   serviceAccountName: cert-manager
 
 image:
-  repository: vadimkim/cert-manager-webhook-hetzner
+  repository: zmejg/cert-manager-webhook-hetzner
   tag: latest
   pullPolicy: IfNotPresent
 
