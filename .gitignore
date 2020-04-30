@@ -1,6 +1,7 @@
 # Folders
 kubebuilder
 .idea
+.idea/*
 # Binaries for programs and plugins
 *.exe
 *.exe~
