@@ -1,7 +1,7 @@
-IMAGE_NAME := "webhook"
+IMAGE_NAME := "cert-manager-webhook-hetzner"
 IMAGE_TAG := "latest"
 
-OUT := $(shell pwd)/_out
+OUT := $(shell pwd)/deploy
 
 $(shell mkdir -p "$(OUT)")
 
@@ -14,7 +14,8 @@ build:
 .PHONY: rendered-manifest.yaml
 rendered-manifest.yaml:
 	helm template \
-	    --name example-webhook \
+	    cert-manager-webhook-hetzner \
         --set image.repository=$(IMAGE_NAME) \
         --set image.tag=$(IMAGE_TAG) \
-        deploy/example-webhook > "$(OUT)/rendered-manifest.yaml"
+		--namespace cert-manager \
+        deploy/cert-manager-webhook-oci > "$(OUT)/rendered-manifest.yaml"
