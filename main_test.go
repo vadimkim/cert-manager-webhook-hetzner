@@ -1,9 +1,9 @@
 package main
 
 import (
+	"math/rand"
 	"os"
 	"testing"
-	"math/rand"
 
 	"github.com/jetstack/cert-manager/test/acme/dns"
 )

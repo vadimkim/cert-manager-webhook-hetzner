@@ -1,38 +1,106 @@
-# ACME webhook example
+# ACME webhook for Hetzner DNS API
 
-The ACME issuer type supports an optional 'webhook' solver, which can be used
-to implement custom DNS01 challenge solving logic.
+This solver can be used when you want to use cert-manager with Hetzner DNS API. API documentation is [here](https://dns.hetzner.com/api-docs)
 
-This is useful if you need to use cert-manager with a DNS provider that is not
-officially supported in cert-manager core.
+## Requirements
+-   [go](https://golang.org/) >= 1.13.0
+-   [helm](https://helm.sh/) >= v3.0.0
+-   [kubernetes](https://kubernetes.io/) >= v1.14.0
+-   [cert-manager](https://cert-manager.io/) >= 0.12.0
 
-## Why not in core?
+## Installation
 
-As the project & adoption has grown, there has been an influx of DNS provider
-pull requests to our core codebase. As this number has grown, the test matrix
-has become un-maintainable and so, it's not possible for us to certify that
-providers work to a sufficient level.
+### cert-manager
 
-By creating this 'interface' between cert-manager and DNS providers, we allow
-users to quickly iterate and test out new integrations, and then packaging
-those up themselves as 'extensions' to cert-manager.
+Follow the [instructions](https://cert-manager.io/docs/installation/) using the cert-manager documentation to install it within your cluster.
 
-We can also then provide a standardised 'testing framework', or set of
-conformance tests, which allow us to validate the a DNS provider works as
-expected.
+### Webhook
 
-## Creating your own webhook
+#### Using public helm chart
+```bash
+helm repo add cert-manager-webhook-hetzner https://github.com/vadimkim/cert-manager-webhook-hetzner
+helm install --namespace cert-manager cert-manager-webhook-hetzner cert-manager-webhook-hetzner/cert-manager-webhook-hetzner
+```
 
-Webhook's themselves are deployed as Kubernetes API services, in order to allow
-administrators to restrict access to webhooks with Kubernetes RBAC.
+#### From local checkout
 
-This is important, as otherwise it'd be possible for anyone with access to your
-webhook to complete ACME challenge validations and obtain certificates.
+```bash
+helm install --namespace cert-manager cert-manager-webhook-hetzner deploy/cert-manager-webhook-hetzner
+```
+**Note**: The kubernetes resources used to install the Webhook should be deployed within the same namespace as the cert-manager.
 
-To make the set up of these webhook's easier, we provide a template repository
-that can be used to get started quickly.
+To uninstall the webhook run
+```bash
+helm uninstall --namespace cert-manager cert-manager-webhook-hetzner
+```
 
-### Creating your own repository
+## Issuer
+
+Create a `ClusterIssuer` or `Issuer` resource as following:
+```yaml
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    # The ACME server URL
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+
+    # Email address used for ACME registration
+    email: mail@example.com # REPLACE THIS WITH YOUR EMAIL!!!
+
+    # Name of a secret used to store the ACME account private key
+    privateKeySecretRef:
+      name: letsencrypt-staging
+
+    solvers:
+      - dns01:
+          webhook:
+            groupName: acme.yourdomain.here
+            solverName: hetzner
+            config:
+              secretName: hetzner-secret
+              zoneName: example.com
+              apiUrl: https://dns.hetzner.com/api/v1
+```
+
+### Credentials
+In order to access the Hetzner API, the webhook needs an API token.
+
+If you choose another name for the secret than `hetzner-secret`, ensure you modify the value of `secretName` in the `[Cluster]Issuer`.
+
+The secret for the example above will look like this:
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hetzner-secret
+type: Opaque
+data:
+  api-key: your-key-base64-encoded
+```
+
+### Create a certificate
+
+Finally you can create certificates, for example:
+
+```yaml
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: example-cert
+  namespace: cert-manager
+spec:
+  commonName: example.com
+  dnsNames:
+    - example.com
+  issuerRef:
+    name: letsencrypt-staging
+  secretName: example-cert
+```
+
+## Development
 
 ### Running the test suite
 
@@ -42,13 +110,15 @@ else they will have undetermined behaviour when used with cert-manager.
 **It is essential that you configure and run the test suite when creating a
 DNS01 webhook.**
 
-An example Go test file has been provided in [main_test.go]().
+First, you need to have Hetzner account with access to DNS control panel. You need to create API token and have a registered and verified DNS zone there.
+Then you need to replace `zoneName` parameter at `testdata/hetzner/config.json` file with actual one.
+You also must encode your api token into base64 and put the hash into `testdata/hetzner/hetzner-secret.yml` file.
 
-You can run the test suite with:
+You can then run the test suite with:
 
 ```bash
-$ TEST_ZONE_NAME=example.com go test .
+# first install necessary binaries (only required once)
+./scripts/fetch-test-binaries.sh
+# then run the tests
+TEST_ZONE_NAME=example.com. make verify
 ```
-
-The example file has a number of areas you must fill in and replace with your
-own options in order for tests to pass.
