@@ -38,6 +38,8 @@ type hetznerDNSProviderSolver struct {
 
 type hetznerDNSProviderConfig struct {
 	SecretRef string `json:"secretName"`
+	ZoneName string  `json:"zoneName"`
+	ApiUrl string	 `json:"apiUrl"`
 }
 
 func (c *hetznerDNSProviderSolver) Name() string {
@@ -47,38 +49,40 @@ func (c *hetznerDNSProviderSolver) Name() string {
 func (c *hetznerDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 	klog.V(6).Infof("call function Present: namespace=%s, zone=%s, fqdn=%s", ch.ResourceNamespace, ch.ResolvedZone, ch.ResolvedFQDN)
 
-	secret, err := hetznerSecret(c, ch)
+	config, err := clientConfig(c, ch)
 
 	if err != nil {
 		return fmt.Errorf("unable to get secret `%s`; %v", ch.ResourceNamespace, err)
 	}
 
-	addTxtRecord(secret, ch)
+	addTxtRecord(config, ch)
 
 	klog.Infof("Presented txt record %v", ch.ResolvedFQDN)
 
 	return nil
 }
 
-// CleanUp should delete the relevant TXT record from the DNS provider console.
-// If multiple TXT records exist with the same record name (e.g.
-// _acme-challenge.example.com) then **only** the record with the same `key`
-// value provided on the ChallengeRequest should be cleaned up.
-// This is in order to facilitate multiple DNS validations for the same domain
-// concurrently.
+
 func (c *hetznerDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
-	secret, err := hetznerSecret(c, ch)
+	config, err := clientConfig(c, ch)
 
 	if err != nil {
 		return fmt.Errorf("unable to get secret `%s`; %v", ch.ResourceNamespace, err)
 	}
-	var url = "https://dns.hetzner.com/api/v1/records?zone_id=" + secret.ZoneId
 
-	// Get all DNS records
-	dnsRecords, err := callDnsApi(url, "GET", nil, secret)
+	zoneId, err := searchZoneId(config)
 
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("unable to find id for zone name `%s`; %v", config.ZoneName, err)
+	}
+
+	var url = config.ApiUrl + "/records?zone_id=" + zoneId
+
+	// Get all DNS records
+	dnsRecords, err := callDnsApi(url, "GET", nil, config)
+
+	if err != nil {
+		return fmt.Errorf("unable to get DNS records %v", err)
 	}
 
 	// Unmarshall response
@@ -86,11 +90,11 @@ func (c *hetznerDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error 
 	readErr := json.Unmarshal(dnsRecords, &records)
 
 	if readErr != nil {
-		panic(readErr)
+		return fmt.Errorf("unable to unmarshal response %v", readErr)
 	}
 
 	var recordId string
-	name := recordName(ch.ResolvedFQDN)
+	name := recordName(ch.ResolvedFQDN, config.ZoneName)
 	for i := len(records.Records) - 1; i >= 0; i-- {
 		if records.Records[i].Name == name {
 			recordId = records.Records[i].Id
@@ -99,8 +103,8 @@ func (c *hetznerDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error 
 	}
 
 	// Delete TXT record
-	url = "https://dns.hetzner.com/api/v1/records/" + recordId
-	del, err := callDnsApi(url, "DELETE", nil, secret)
+	url = config.ApiUrl + "/records/" + recordId
+	del, err := callDnsApi(url, "DELETE", nil, config)
 
 	if err != nil {
 		klog.Error(err)
@@ -142,14 +146,19 @@ func stringFromSecretData(secretData *map[string][]byte, key string) (string, er
 	return string(data), nil
 }
 
-func addTxtRecord(secret internal.Secret, ch *v1alpha1.ChallengeRequest) {
-	url := "https://dns.hetzner.com/api/v1/records"
+func addTxtRecord(config internal.Config, ch *v1alpha1.ChallengeRequest) {
+	url := config.ApiUrl + "/records"
 
-	name := recordName(ch.ResolvedFQDN)
+	name := recordName(ch.ResolvedFQDN, config.ZoneName)
+	zoneId, err := searchZoneId(config)
 
-	var jsonStr = fmt.Sprintf(`{"value":"%s", "ttl":120, "type":"TXT", "name":"%s", "zone_id":"%s"}`, ch.Key, name, secret.ZoneId)
+	if err != nil {
+		klog.Errorf("unable to find id for zone name `%s`; %v", config.ZoneName, err)
+	}
 
-	add, err := callDnsApi(url, "POST", bytes.NewBuffer([]byte(jsonStr)), secret)
+	var jsonStr = fmt.Sprintf(`{"value":"%s", "ttl":120, "type":"TXT", "name":"%s", "zone_id":"%s"}`, ch.Key, name, zoneId)
+
+	add, err := callDnsApi(url, "POST", bytes.NewBuffer([]byte(jsonStr)), config)
 
 	if err != nil {
 		klog.Error(err)
@@ -157,51 +166,55 @@ func addTxtRecord(secret internal.Secret, ch *v1alpha1.ChallengeRequest) {
 	klog.Infof("Added TXT record result: %s", string (add))
 }
 
-func hetznerSecret(c *hetznerDNSProviderSolver, ch *v1alpha1.ChallengeRequest) (internal.Secret, error) {
-	var secret internal.Secret
+func clientConfig(c *hetznerDNSProviderSolver, ch *v1alpha1.ChallengeRequest) (internal.Config, error) {
+	var config internal.Config
 
 	cfg, err := loadConfig(ch.Config)
 	if err != nil {
-		return secret, err
+		return config, err
 	}
+	config.ZoneName = cfg.ZoneName
+	config.ApiUrl = cfg.ApiUrl
 
 	secretName := cfg.SecretRef
 	sec, err := c.client.CoreV1().Secrets(ch.ResourceNamespace).Get(secretName, metav1.GetOptions{})
 
 	if err != nil {
-		return secret, fmt.Errorf("unable to get secret `%s/%s`; %v", secretName, ch.ResourceNamespace, err)
+		return config, fmt.Errorf("unable to get secret `%s/%s`; %v", secretName, ch.ResourceNamespace, err)
 	}
 
 	apiKey, err := stringFromSecretData(&sec.Data, "api-key")
-	secret.ApiKey = apiKey
+	config.ApiKey = apiKey
+
 	if err != nil {
-		return secret, fmt.Errorf("unable to get api-key from secret `%s/%s`; %v", secretName, ch.ResourceNamespace, err)
+		return config, fmt.Errorf("unable to get api-key from secret `%s/%s`; %v", secretName, ch.ResourceNamespace, err)
 	}
 
-	zoneId, err := stringFromSecretData(&sec.Data, "zone-id")
-	secret.ZoneId = zoneId
-	if err != nil {
-		return secret, fmt.Errorf("unable to get zone-id from secret `%s/%s`; %v", secretName, ch.ResourceNamespace, err)
-	}
-	return secret, nil
+	return config, nil
 }
 
-func recordName (fqdn string) string {
-	r := regexp.MustCompile("(.+)\\.(.+)\\.(.+)\\.")
+/*
+Domain name in Hetzner is divided in 2 parts: record + zone name. API works
+with record name that is FQDN without zone name. Sub-domains is a part of
+record name and is separated by "."
+ */
+func recordName (fqdn string, domain string) string {
+	r := regexp.MustCompile("(.+)\\." + domain + "\\.")
 	name := r.FindStringSubmatch(fqdn)
-	if len(name) != 4 {
-		panic("Splitting domain name failed! " + fqdn)
+	if len(name) != 2 {
+		klog.Errorf("splitting domain name %s failed!", fqdn)
+		return ""
 	}
 	return name[1]
 }
 
-func callDnsApi (url string, method string, body io.Reader, secret internal.Secret) ([]byte, error) {
+func callDnsApi (url string, method string, body io.Reader, config internal.Config) ([]byte, error) {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
-		panic(err)
+		return []byte{}, fmt.Errorf("unable to execute request %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Auth-API-Token", secret.ApiKey)
+	req.Header.Set("Auth-API-Token", config.ApiKey)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -224,4 +237,28 @@ func callDnsApi (url string, method string, body io.Reader, secret internal.Secr
 	text := "Error calling API status:" + resp.Status + " reason: " +  string(respBody)
 	klog.Error(text)
 	return nil, errors.New(text)
+}
+
+func searchZoneId(config internal.Config) (string, error) {
+	url := config.ApiUrl + "/zones?name=" + config.ZoneName
+
+	// Get Zone configuration
+	zoneRecords, err := callDnsApi(url, "GET", nil, config)
+
+	if err != nil {
+		return "", fmt.Errorf("unable to get zone info %v", err)
+	}
+
+	// Unmarshall response
+	zones := internal.ZoneResponse{}
+	readErr := json.Unmarshal(zoneRecords, &zones)
+
+	if readErr != nil {
+		return "", fmt.Errorf("unable to unmarshal response %v", readErr)
+	}
+
+	if zones.Meta.Pagination.TotalEntries != 1 {
+		return "", fmt.Errorf("wrong number of zones in response %d must be exactly = 1", zones.Meta.Pagination.TotalEntries)
+	}
+	return zones.Zones[0].Id, nil
 }

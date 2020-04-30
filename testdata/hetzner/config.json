@@ -1,3 +1,5 @@
 {
-  "secretName": "hetzner-secret"
+  "secretName": "hetzner-secret",
+  "zoneName": "example.com",
+  "apiUrl" : "https://dns.hetzner.com/api/v1"
 }
