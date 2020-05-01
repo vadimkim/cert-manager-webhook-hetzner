@@ -14,7 +14,7 @@ certManager:
 
 image:
   repository: zmejg/cert-manager-webhook-hetzner
-  tag: latest
+  tag: 1.0.0
   pullPolicy: IfNotPresent
 
 nameOverride: ""
