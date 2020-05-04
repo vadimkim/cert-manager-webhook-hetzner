@@ -88,3 +88,36 @@ subjects:
     kind: ServiceAccount
     name: {{ .Values.certManager.serviceAccountName }}
     namespace: {{ .Values.certManager.namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "cert-manager-webhook-hetzner.fullname" . }}:secret-reader
+  namespace: {{ .Release.Namespace }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - "secrets"
+    {{- with .Values.secretName }}
+    resourceNames:
+    {{ toYaml . | indent 4 }}
+    {{- end }}
+    verbs:
+      - "get"
+      - "watch"
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: {{ include "cert-manager-webhook-hetzner.fullname" . }}:secret-reader
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "cert-manager-webhook-hetzner.fullname" . }}:secret-reader
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ include "cert-manager-webhook-hetzner.fullname" . }}
+    namespace: {{ .Release.Namespace }}

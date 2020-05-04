@@ -17,12 +17,17 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
+replicaCount: 2
+
 nameOverride: ""
 fullnameOverride: ""
 
 service:
   type: ClusterIP
   port: 443
+
+secretName:
+  - hetzner-secret
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
