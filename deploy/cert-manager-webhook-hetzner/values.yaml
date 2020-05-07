@@ -17,8 +17,6 @@ image:
   tag: latest
   pullPolicy: IfNotPresent
 
-replicaCount: 2
-
 nameOverride: ""
 fullnameOverride: ""
 
