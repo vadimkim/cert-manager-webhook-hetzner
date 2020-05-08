@@ -234,7 +234,7 @@ func callDnsApi (url string, method string, body io.Reader, config internal.Conf
 		return respBody, nil
 	}
 
-	text := "Error calling API status:" + resp.Status + " reason: " +  string(respBody)
+	text := "Error calling API status:" + resp.Status + " url: " +  url
 	klog.Error(text)
 	return nil, errors.New(text)
 }
