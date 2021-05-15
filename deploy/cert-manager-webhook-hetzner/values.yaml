@@ -6,7 +6,7 @@
 # solve the DNS01 challenge.
 # This group name should be **unique**, hence using your own company's domain
 # here is recommended.FROM golang:1.14.0-alpine AS build_deps
-groupName: acme.unique.company.name
+groupName: acme.yourdomain.tld
 
 certManager:
   namespace: cert-manager
