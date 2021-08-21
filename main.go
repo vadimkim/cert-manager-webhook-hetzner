@@ -98,7 +98,7 @@ func (c *hetznerDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error 
 	var recordId string
 	name := recordName(ch.ResolvedFQDN, config.ZoneName)
 	for i := len(records.Records) - 1; i >= 0; i-- {
-		if records.Records[i].Name == name {
+		if strings.EqualFold(records.Records[i].Name, name) {
 			recordId = records.Records[i].Id
 			break
 		}
