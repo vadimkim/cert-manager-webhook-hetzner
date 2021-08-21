@@ -1,5 +1,6 @@
 # Folders
 kubebuilder
+.vscode/
 .idea/
 # Binaries for programs and plugins
 *.exe
