@@ -5,19 +5,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"regexp"
+	"strings"
+
 	"github.com/jetstack/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
 	"github.com/jetstack/cert-manager/pkg/acme/webhook/cmd"
 	"github.com/vadimkim/cert-manager-webhook-hetzner/internal"
-	"io"
-	"io/ioutil"
 	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
-	"net/http"
-	"os"
-	"regexp"
 )
 
 var GroupName = os.Getenv("GROUP_NAME")
@@ -96,7 +98,7 @@ func (c *hetznerDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error 
 	var recordId string
 	name := recordName(ch.ResolvedFQDN, config.ZoneName)
 	for i := len(records.Records) - 1; i >= 0; i-- {
-		if records.Records[i].Name == name {
+		if strings.EqualFold(records.Records[i].Name, name) {
 			recordId = records.Records[i].Id
 			break
 		}
@@ -190,6 +192,15 @@ func clientConfig(c *hetznerDNSProviderSolver, ch *v1alpha1.ChallengeRequest) (i
 		return config, fmt.Errorf("unable to get api-key from secret `%s/%s`; %v", secretName, ch.ResourceNamespace, err)
 	}
 
+	// Get ZoneName by api search if not provided by config
+	if config.ZoneName == "" {
+		foundZone, err := searchZoneName(config, ch.ResolvedZone)
+		if err!= nil {
+			return config, err
+		}
+		config.ZoneName = foundZone
+	}
+
 	return config, nil
 }
 
@@ -261,4 +272,18 @@ func searchZoneId(config internal.Config) (string, error) {
 		return "", fmt.Errorf("wrong number of zones in response %d must be exactly = 1", zones.Meta.Pagination.TotalEntries)
 	}
 	return zones.Zones[0].Id, nil
+}
+
+func searchZoneName(config internal.Config, searchZone string) (string, error) {
+	parts := strings.Split(searchZone, ".")
+	parts = parts[:len(parts)-1]
+	for i := 0; i <= len(parts) - 2; i++ {
+		config.ZoneName = strings.Join(parts[i:], ".")
+		zoneId, _ := searchZoneId(config)
+		if zoneId != "" {
+			klog.Infof("Found ID with ZoneName: %s", config.ZoneName)
+			return config.ZoneName, nil
+		}
+	}
+	return "", fmt.Errorf("unable to find hetzner dns zone with: %s", searchZone)
 }

@@ -63,7 +63,7 @@ spec:
             solverName: hetzner
             config:
               secretName: hetzner-secret
-              zoneName: example.com
+              zoneName: example.com # (Optional): When not provided the Zone will searched in Hetzner API by recursion on full domain name
               apiUrl: https://dns.hetzner.com/api/v1
 ```
 
