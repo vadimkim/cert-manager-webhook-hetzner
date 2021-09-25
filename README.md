@@ -125,3 +125,12 @@ You can then run the test suite with:
 # then run the tests
 TEST_ZONE_NAME=example.com. make verify
 ```
+
+## Creating new package
+
+To compile and publish new Helm chart version:
+```
+helm package deploy/cert-manager-webhook-hetzner
+git checkout gh-pages
+helm repo index . --url https://vadimkim.github.io/cert-manager-webhook-hetzner/
+```
