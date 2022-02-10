@@ -56,6 +56,9 @@ spec:
         - name: certs
           secret:
             secretName: {{ include "cert-manager-webhook-hetzner.servingCertificate" . }}
+      securityContext:
+        runAsGroup: 1000
+        runAsUser: 1000
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
