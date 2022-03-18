@@ -10,7 +10,7 @@ groupName: acme.yourdomain.tld
 
 certManager:
   namespace: cert-manager
-  serviceAccountName: cert-manager
+  serviceAccountName: cert-manager-controller
 
 image:
   repository: zmejg/cert-manager-webhook-hetzner
