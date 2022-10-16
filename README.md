@@ -3,10 +3,10 @@
 This solver can be used when you want to use cert-manager with Hetzner DNS API. API documentation is [here](https://dns.hetzner.com/api-docs)
 
 ## Requirements
--   [go](https://golang.org/) >= 1.13.0
+-   [go](https://golang.org/) >= 1.18.0
 -   [helm](https://helm.sh/) >= v3.0.0
--   [kubernetes](https://kubernetes.io/) >= v1.14.0
--   [cert-manager](https://cert-manager.io/) >= 0.12.0
+-   [kubernetes](https://kubernetes.io/) >= v1.23.0
+-   [cert-manager](https://cert-manager.io/) >= 1.8.2
 
 ## Installation
 
@@ -18,15 +18,15 @@ Follow the [instructions](https://cert-manager.io/docs/installation/) using the 
 
 #### Using public helm chart
 ```bash
-helm repo add cert-manager-webhook-hetzner https://vadimkim.github.io/cert-manager-webhook-hetzner
+helm repo add cert-manager-webhook-hetzner https://devconsole-de.github.io/cert-manager-webhook-hetzner
 # Replace the groupName value with your desired domain
-helm install --namespace cert-manager cert-manager-webhook-hetzner cert-manager-webhook-hetzner/cert-manager-webhook-hetzner --set groupName=acme.yourdomain.tld
+helm upgrade -i --namespace cert-manager cert-manager-webhook-hetzner cert-manager-webhook-hetzner/cert-manager-webhook-hetzner --set groupName=acme.yourdomain.tld
 ```
 
 #### From local checkout
 
 ```bash
-helm install --namespace cert-manager cert-manager-webhook-hetzner deploy/cert-manager-webhook-hetzner
+helm upgrade -i --namespace cert-manager cert-manager-webhook-hetzner deploy/cert-manager-webhook-hetzner
 ```
 **Note**: The kubernetes resources used to install the Webhook should be deployed within the same namespace as the cert-manager.
 
@@ -39,14 +39,16 @@ helm uninstall --namespace cert-manager cert-manager-webhook-hetzner
 
 Create a `ClusterIssuer` or `Issuer` resource as following:
 ```yaml
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-staging
 spec:
   acme:
-    # The ACME server URL
+    # The ACME server URL for staging
     server: https://acme-staging-v02.api.letsencrypt.org/directory
+    # If you want to use production ACME server URL: 
+    # server: https://acme-v02.api.letsencrypt.org/directory
 
     # Email address used for ACME registration
     email: mail@example.com # REPLACE THIS WITH YOUR EMAIL!!!
@@ -88,7 +90,7 @@ data:
 Finally you can create certificates, for example:
 
 ```yaml
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: example-cert
@@ -132,5 +134,5 @@ To compile and publish new Helm chart version:
 ```
 helm package deploy/cert-manager-webhook-hetzner
 git checkout gh-pages
-helm repo index . --url https://vadimkim.github.io/cert-manager-webhook-hetzner/
+helm repo index . --url https://devconsole-de.github.io/cert-manager-webhook-hetzner/
 ```

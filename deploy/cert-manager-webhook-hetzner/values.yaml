@@ -5,7 +5,7 @@
 # inform cert-manager of where to send ChallengePayload resources in order to
 # solve the DNS01 challenge.
 # This group name should be **unique**, hence using your own company's domain
-# here is recommended.FROM golang:1.14.0-alpine AS build_deps
+# here is recommended.
 groupName: acme.yourdomain.tld
 
 certManager:
@@ -13,7 +13,7 @@ certManager:
   serviceAccountName: cert-manager
 
 image:
-  repository: zmejg/cert-manager-webhook-hetzner
+  repository: devconsole/cert-manager-webhook-hetzner
   tag: latest
   pullPolicy: IfNotPresent
 
