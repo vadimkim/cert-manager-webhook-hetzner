@@ -40,12 +40,12 @@ spec:
             httpGet:
               scheme: HTTPS
               path: /healthz
-              port: https
+              port: 8443
           readinessProbe:
             httpGet:
               scheme: HTTPS
               path: /healthz
-              port: https
+              port: 8443
           volumeMounts:
             - name: certs
               mountPath: /tls
