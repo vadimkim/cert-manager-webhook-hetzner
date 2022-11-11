@@ -88,7 +88,7 @@ data:
 Finally you can create certificates, for example:
 
 ```yaml
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: example-cert
