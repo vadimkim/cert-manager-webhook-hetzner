@@ -5,7 +5,7 @@
 # inform cert-manager of where to send ChallengePayload resources in order to
 # solve the DNS01 challenge.
 # This group name should be **unique**, hence using your own company's domain
-# here is recommended.FROM golang:1.14.0-alpine AS build_deps
+# here is recommended.
 groupName: acme.yourdomain.tld
 
 certManager:
@@ -13,12 +13,15 @@ certManager:
   serviceAccountName: cert-manager
 
 image:
-  repository: zmejg/cert-manager-webhook-hetzner
-  tag: latest
-  pullPolicy: IfNotPresent
+  repository: ${{ IMAGE_REPOSITORY }}
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+  pullPolicy: Always
 
 nameOverride: ""
 fullnameOverride: ""
+
+replicaCount: 1
 
 service:
   type: ClusterIP
@@ -27,17 +30,30 @@ service:
 secretName:
   - hetzner-secret
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  # requests:
-  #  cpu: 100m
-  #  memory: 128Mi
+podSecurityContext:
+  runAsUser: 10001
+  runAsGroup: 10001
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  privileged: false
+  readOnlyRootFilesystem: true
+
+hostUsers: true
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
 
 nodeSelector: {}
 
