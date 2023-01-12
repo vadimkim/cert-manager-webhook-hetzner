@@ -1,0 +1,76 @@
+name: CI Workflow
+
+on:
+  push:
+    branches:
+      - master
+      - 'feature/*'
+      - 'bugfix/*'
+  pull_request:
+    branches:
+      - master
+  schedule:
+    - cron: '37 4 * * *'
+
+env:
+  IMAGE_NAME: cert-manager-webhook-hetzner
+  IMAGE_VERSION: 1.0.0
+  HELM_CHART_NAME: cert-manager-webhook-hetzner
+  HELM_CHART_VERSION: 0.1.0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Build
+        run: CGO_ENABLED=0 go build -v -buildmode=pie -buildvcs=false -ldflags="-s -w" ./cmd/webhook
+
+      - name: Build Container Image
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ env.IMAGE_VERSION }} ${{ env.IMAGE_VERSION }}-${{ github.sha }}
+          containerfiles: |
+            ./Dockerfile
+          oci: true
+
+      - name: Push Container Image To GitHub Container Registry
+        if: ${{ github.ref == 'refs/heads/master' }}
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build_image.outputs.image }}
+          tags: ${{ steps.build_image.outputs.tags }}
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+          extra-args: |
+            --disable-content-trust
+
+      - name: Set up Helm
+        if: ${{ github.ref == 'refs/heads/master' }}
+        uses: azure/setup-helm@v3
+
+      - name: Publish Helm Chart
+        if: ${{ github.ref == 'refs/heads/master' }}
+        run: |
+          helm lint --strict ./deployments/helm
+          
+          # Log in to GitHub Container Registry
+          echo ${{ env.REGISTRY_PASSWORD }} | helm registry login -u ${{ env.REGISTRY_USER }} --password-stdin ${{ env.IMAGE_REGISTRY }}
+          
+          # Package Helm Chart
+          helm package ./deployments/helm --app-version ${{ env.IMAGE_VERSION }} --version ${{ env.HELM_CHART_VERSION }}
+          
+          # Push Helm Chart
+          helm push ${{ env.HELM_CHART_NAME }}-${{ env.HELM_CHART_VERSION }}.tgz oci://${{ env.IMAGE_REGISTRY }}/charts
+
+          # Log out of GitHub Container Registry
+          helm registry logout ${{ env.IMAGE_REGISTRY }}
