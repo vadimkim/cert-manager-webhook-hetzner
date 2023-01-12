@@ -1,25 +1,11 @@
-FROM golang:1.14.2-alpine AS build_deps
+FROM docker.io/alpine:3
+ARG WEBHOOK_ARTIFACT_PATH="./webhook"
 
-RUN apk add --no-cache git
+RUN \
+  apk upgrade && \
+  apk add ca-certificates && \
+  rm -rf /var/cache/apk/*
 
-WORKDIR /workspace
-ENV GO111MODULE=on
+COPY "${WEBHOOK_ARTIFACT_PATH}" /usr/local/bin/webhook
 
-COPY go.mod .
-COPY go.sum .
-
-RUN go mod download
-
-FROM build_deps AS build
-
-COPY . .
-
-RUN CGO_ENABLED=0 go build -o webhook -ldflags '-w -extldflags "-static"' .
-
-FROM alpine:3.11
-
-RUN apk add --no-cache ca-certificates
-
-COPY --from=build /workspace/webhook /usr/local/bin/webhook
-
-ENTRYPOINT ["webhook"]
+ENTRYPOINT ["/usr/local/bin/webhook"]
