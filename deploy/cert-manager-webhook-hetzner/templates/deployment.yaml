@@ -46,6 +46,10 @@ spec:
               scheme: HTTPS
               path: /healthz
               port: https
+        {{- with .Values.securityContext }}
+          securityContext:
+{{ toYaml . | indent 12 }}
+        {{- end }}
           volumeMounts:
             - name: certs
               mountPath: /tls
@@ -56,9 +60,10 @@ spec:
         - name: certs
           secret:
             secretName: {{ include "cert-manager-webhook-hetzner.servingCertificate" . }}
+    {{- with .Values.podSecurityContext }}
       securityContext:
-        runAsGroup: 1000
-        runAsUser: 1000
+{{ toYaml . | indent 8 }}
+    {{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
