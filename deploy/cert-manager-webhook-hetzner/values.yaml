@@ -43,3 +43,13 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+
+podSecurityContext:
+  runAsGroup: 1000
+  runAsUser: 1000
+  runAsNonRoot: true
