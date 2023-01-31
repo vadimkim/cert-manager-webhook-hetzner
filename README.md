@@ -128,8 +128,13 @@ TEST_ZONE_NAME=example.com. make verify
 
 ## Creating new package
 
-To compile and publish new Helm chart version:
+To build new Docker image for multiple architectures and push it to hub:
+```shell
+docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t zmejg/cert-manager-webhook-hetzner:1.2.0 . --push
 ```
+
+To compile and publish new Helm chart version:
+```shell
 helm package deploy/cert-manager-webhook-hetzner
 git checkout gh-pages
 helm repo index . --url https://vadimkim.github.io/cert-manager-webhook-hetzner/
