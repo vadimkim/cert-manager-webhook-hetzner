@@ -2,4 +2,4 @@ apiVersion: v1
 appVersion: "1.2.0"
 description: Allow cert-manager to solve DNS challenges using Hetzner DNS API
 name: cert-manager-webhook-hetzner
-version: 1.1.2
+version: 1.2.0
