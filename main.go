@@ -2,24 +2,26 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
+	"context"
 	"errors"
-	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
-	"os"
 	"regexp"
 	"strings"
 
-	"github.com/jetstack/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
-	"github.com/jetstack/cert-manager/pkg/acme/webhook/cmd"
+	"encoding/json"
+	"fmt"
+	"os"
+
+	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/client-go/rest"
+
+	"github.com/cert-manager/cert-manager/pkg/acme/webhook/apis/acme/v1alpha1"
+	"github.com/cert-manager/cert-manager/pkg/acme/webhook/cmd"
 	"github.com/vadimkim/cert-manager-webhook-hetzner/internal"
-	extapi "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 var GroupName = os.Getenv("GROUP_NAME")
@@ -40,8 +42,8 @@ type hetznerDNSProviderSolver struct {
 
 type hetznerDNSProviderConfig struct {
 	SecretRef string `json:"secretName"`
-	ZoneName string  `json:"zoneName"`
-	ApiUrl string	 `json:"apiUrl"`
+	ZoneName  string `json:"zoneName"`
+	ApiUrl    string `json:"apiUrl"`
 }
 
 func (c *hetznerDNSProviderSolver) Name() string {
@@ -63,7 +65,6 @@ func (c *hetznerDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) error 
 
 	return nil
 }
-
 
 func (c *hetznerDNSProviderSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 	config, err := clientConfig(c, ch)
@@ -165,7 +166,7 @@ func addTxtRecord(config internal.Config, ch *v1alpha1.ChallengeRequest) {
 	if err != nil {
 		klog.Error(err)
 	}
-	klog.Infof("Added TXT record result: %s", string (add))
+	klog.Infof("Added TXT record result: %s", string(add))
 }
 
 func clientConfig(c *hetznerDNSProviderSolver, ch *v1alpha1.ChallengeRequest) (internal.Config, error) {
@@ -179,7 +180,7 @@ func clientConfig(c *hetznerDNSProviderSolver, ch *v1alpha1.ChallengeRequest) (i
 	config.ApiUrl = cfg.ApiUrl
 
 	secretName := cfg.SecretRef
-	sec, err := c.client.CoreV1().Secrets(ch.ResourceNamespace).Get(secretName, metav1.GetOptions{})
+	sec, err := c.client.CoreV1().Secrets(ch.ResourceNamespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 
 	if err != nil {
 		return config, fmt.Errorf("unable to get secret `%s/%s`; %v", secretName, ch.ResourceNamespace, err)
@@ -195,7 +196,7 @@ func clientConfig(c *hetznerDNSProviderSolver, ch *v1alpha1.ChallengeRequest) (i
 	// Get ZoneName by api search if not provided by config
 	if config.ZoneName == "" {
 		foundZone, err := searchZoneName(config, ch.ResolvedZone)
-		if err!= nil {
+		if err != nil {
 			return config, err
 		}
 		config.ZoneName = foundZone
@@ -206,10 +207,10 @@ func clientConfig(c *hetznerDNSProviderSolver, ch *v1alpha1.ChallengeRequest) (i
 
 /*
 Domain name in Hetzner is divided in 2 parts: record + zone name. API works
-with record name that is FQDN without zone name. Sub-domains is a part of
+with record name that is FQDN without zone name. Subdomains is a part of
 record name and is separated by "."
- */
-func recordName (fqdn string, domain string) string {
+*/
+func recordName(fqdn string, domain string) string {
 	r := regexp.MustCompile("(.+)\\." + domain + "\\.")
 	name := r.FindStringSubmatch(fqdn)
 	if len(name) != 2 {
@@ -219,7 +220,7 @@ func recordName (fqdn string, domain string) string {
 	return name[1]
 }
 
-func callDnsApi (url string, method string, body io.Reader, config internal.Config) ([]byte, error) {
+func callDnsApi(url string, method string, body io.Reader, config internal.Config) ([]byte, error) {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return []byte{}, fmt.Errorf("unable to execute request %v", err)
@@ -240,12 +241,12 @@ func callDnsApi (url string, method string, body io.Reader, config internal.Conf
 		}
 	}()
 
-	respBody, _ := ioutil.ReadAll(resp.Body)
+	respBody, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode == http.StatusOK {
 		return respBody, nil
 	}
 
-	text := "Error calling API status:" + resp.Status + " url: " +  url + " method: " + method
+	text := "Error calling API status:" + resp.Status + " url: " + url + " method: " + method
 	klog.Error(text)
 	return nil, errors.New(text)
 }
@@ -277,7 +278,7 @@ func searchZoneId(config internal.Config) (string, error) {
 func searchZoneName(config internal.Config, searchZone string) (string, error) {
 	parts := strings.Split(searchZone, ".")
 	parts = parts[:len(parts)-1]
-	for i := 0; i <= len(parts) - 2; i++ {
+	for i := 0; i <= len(parts)-2; i++ {
 		config.ZoneName = strings.Join(parts[i:], ".")
 		zoneId, _ := searchZoneId(config)
 		if zoneId != "" {
