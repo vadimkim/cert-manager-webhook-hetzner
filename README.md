@@ -23,6 +23,9 @@ helm repo add cert-manager-webhook-hetzner https://vadimkim.github.io/cert-manag
 helm install --namespace cert-manager cert-manager-webhook-hetzner cert-manager-webhook-hetzner/cert-manager-webhook-hetzner --set groupName=acme.yourdomain.tld
 ```
 
+Check [values.yaml](deploy
+/cert-manager-webhook-hetzner/values.yaml) for more configurable options.
+
 #### From local checkout
 
 ```bash
@@ -70,7 +73,7 @@ spec:
 ### Credentials
 In order to access the Hetzner API, the webhook needs an API token.
 
-If you choose another name for the secret than `hetzner-secret`, ensure you modify the value of `secretName` in the `[Cluster]Issuer`.
+If you choose another name for the secret than `hetzner-secret`, ensure you modify the value of `secretName` in the `[Cluster]Issuer` as well as the `secretName` in the helm chart settings.
 
 The secret for the example above will look like this:
 ```yaml
