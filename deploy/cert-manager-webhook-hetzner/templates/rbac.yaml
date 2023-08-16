@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ include "cert-manager-webhook-hetzner.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ include "cert-manager-webhook-hetzner.name" . }}
     chart: {{ include "cert-manager-webhook-hetzner.chart" . }}
