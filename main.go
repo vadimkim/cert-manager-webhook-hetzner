@@ -51,7 +51,8 @@ func (c *hetznerDNSProviderSolver) Name() string {
 }
 
 func (c *hetznerDNSProviderSolver) Present(ch *v1alpha1.ChallengeRequest) error {
-	klog.V(6).Infof("call function Present: namespace=%s, zone=%s, fqdn=%s", ch.ResourceNamespace, ch.ResolvedZone, ch.ResolvedFQDN)
+	klog.V(6).Infof("call function Present: namespace=%s, zone=%s, fqdn=%s",
+		ch.ResourceNamespace, ch.ResolvedZone, ch.ResolvedFQDN)
 
 	config, err := clientConfig(c, ch)
 
@@ -141,8 +142,8 @@ func loadConfig(cfgJSON *extapi.JSON) (hetznerDNSProviderConfig, error) {
 	return cfg, nil
 }
 
-func stringFromSecretData(secretData *map[string][]byte, key string) (string, error) {
-	data, ok := (*secretData)[key]
+func stringFromSecretData(secretData map[string][]byte, key string) (string, error) {
+	data, ok := secretData[key]
 	if !ok {
 		return "", fmt.Errorf("key %q not found in secret data", key)
 	}
@@ -159,7 +160,7 @@ func addTxtRecord(config internal.Config, ch *v1alpha1.ChallengeRequest) {
 		klog.Errorf("unable to find id for zone name `%s`; %v", config.ZoneName, err)
 	}
 
-	var jsonStr = fmt.Sprintf(`{"value":"%s", "ttl":120, "type":"TXT", "name":"%s", "zone_id":"%s"}`, ch.Key, name, zoneId)
+	var jsonStr = fmt.Sprintf(`{"value":%q, "ttl":120, "type":"TXT", "name":%q, "zone_id":%q}`, ch.Key, name, zoneId)
 
 	add, err := callDnsApi(url, "POST", bytes.NewBuffer([]byte(jsonStr)), config)
 
@@ -186,7 +187,7 @@ func clientConfig(c *hetznerDNSProviderSolver, ch *v1alpha1.ChallengeRequest) (i
 		return config, fmt.Errorf("unable to get secret `%s/%s`; %v", secretName, ch.ResourceNamespace, err)
 	}
 
-	apiKey, err := stringFromSecretData(&sec.Data, "api-key")
+	apiKey, err := stringFromSecretData(sec.Data, "api-key")
 	config.ApiKey = apiKey
 
 	if err != nil {
@@ -210,7 +211,7 @@ Domain name in Hetzner is divided in 2 parts: record + zone name. API works
 with record name that is FQDN without zone name. Subdomains is a part of
 record name and is separated by "."
 */
-func recordName(fqdn string, domain string) string {
+func recordName(fqdn, domain string) string {
 	r := regexp.MustCompile("(.+)\\." + domain + "\\.")
 	name := r.FindStringSubmatch(fqdn)
 	if len(name) != 2 {
@@ -220,8 +221,9 @@ func recordName(fqdn string, domain string) string {
 	return name[1]
 }
 
-func callDnsApi(url string, method string, body io.Reader, config internal.Config) ([]byte, error) {
-	req, err := http.NewRequest(method, url, body)
+func callDnsApi(url, method string, body io.Reader, config internal.Config) ([]byte, error) {
+	ctx := context.Background()
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return []byte{}, fmt.Errorf("unable to execute request %v", err)
 	}
