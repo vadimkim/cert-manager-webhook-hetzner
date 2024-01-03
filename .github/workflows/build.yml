@@ -6,7 +6,7 @@ on:
     branches:
       - master
     tags:
-      - 'rel-*'
+      - 'v*'
   pull_request:
 
 jobs:
