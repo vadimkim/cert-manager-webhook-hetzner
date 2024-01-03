@@ -6,7 +6,7 @@ on:
     branches:
       - master
     tags:
-      - 'v*'
+      - 'rel-*'
   pull_request:
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            vadimkim/cert-manager-webhook-hetzner
+            zmejg/cert-manager-webhook-hetzner
             ghcr.io/vadimkim/cert-manager-webhook-hetzner
           tags: |
             type=ref,event=branch
