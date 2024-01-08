@@ -2,8 +2,17 @@ apiVersion: v1
 entries:
   cert-manager-webhook-hetzner:
   - apiVersion: v1
+    appVersion: 1.3.0
+    created: "2024-01-08T19:06:22.869093038+02:00"
+    description: Allow cert-manager to solve DNS challenges using Hetzner DNS API
+    digest: e0a2bcb5c891ee8c6ecbd4040fb063074f69e4511cdba3cfc6820c51481c52d4
+    name: cert-manager-webhook-hetzner
+    urls:
+    - https://vadimkim.github.io/cert-manager-webhook-hetzner/cert-manager-webhook-hetzner-1.3.0.tgz
+    version: 1.3.0
+  - apiVersion: v1
     appVersion: 1.2.2
-    created: "2023-03-05T21:35:39.5585995+02:00"
+    created: "2024-01-08T19:06:22.868949649+02:00"
     description: Allow cert-manager to solve DNS challenges using Hetzner DNS API
     digest: 4cbcadadddfdfe6ab83ca2153749c754d2969a087370791292d5febb45f856ce
     name: cert-manager-webhook-hetzner
@@ -12,7 +21,7 @@ entries:
     version: 1.2.2
   - apiVersion: v1
     appVersion: 1.2.1
-    created: "2023-03-05T21:35:39.5529307+02:00"
+    created: "2024-01-08T19:06:22.868806471+02:00"
     description: Allow cert-manager to solve DNS challenges using Hetzner DNS API
     digest: 5807d560ab308c30fd6bc2ec829c2044d6781f13a2dbcf9ea4e9a526413b4911
     name: cert-manager-webhook-hetzner
@@ -21,7 +30,7 @@ entries:
     version: 1.2.1
   - apiVersion: v1
     appVersion: 1.2.0
-    created: "2023-03-05T21:35:39.5401474+02:00"
+    created: "2024-01-08T19:06:22.868664986+02:00"
     description: Allow cert-manager to solve DNS challenges using Hetzner DNS API
     digest: e5b43d56136a6820aebfd41d35a778f54fda0f2aee2531a895893be868b5b2cc
     name: cert-manager-webhook-hetzner
@@ -30,7 +39,7 @@ entries:
     version: 1.2.0
   - apiVersion: v1
     appVersion: 1.1.0
-    created: "2023-03-05T21:35:39.5278377+02:00"
+    created: "2024-01-08T19:06:22.868504605+02:00"
     description: Allow cert-manager to solve DNS challenges using Hetzner DNS API
     digest: ecda6acfbb68519790ea079914e5ab4735a7ecc7bfaf079472ccad961449e435
     name: cert-manager-webhook-hetzner
@@ -39,11 +48,11 @@ entries:
     version: 1.1.1
   - apiVersion: v1
     appVersion: 1.1.0
-    created: "2023-03-05T21:35:39.5179952+02:00"
+    created: "2024-01-08T19:06:22.868357319+02:00"
     description: Allow cert-manager to solve DNS challenges using Hetzner DNS API
     digest: 7d3e80edc82371737e9ee5af2fed832ca05f716c5a1b61019fd80e3c9370d511
     name: cert-manager-webhook-hetzner
     urls:
     - https://vadimkim.github.io/cert-manager-webhook-hetzner/cert-manager-webhook-hetzner-1.1.0.tgz
     version: 1.1.0
-generated: "2023-03-05T21:35:39.5075638+02:00"
+generated: "2024-01-08T19:06:22.868131346+02:00"
