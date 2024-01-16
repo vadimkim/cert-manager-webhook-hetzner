@@ -43,6 +43,12 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
         uses: helm/kind-action@v1.8.0
 
+      - name: Install cert-manager
+        run: |
+          kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.13.3/cert-manager.yaml
+          kubectl wait --timeout=5m --for=condition=available deployment cert-manager -n cert-manager
+          kubectl wait --timeout=5m --for=condition=available deployment cert-manager-webhook -n cert-manager
+
       - name: Run chart-testing (install)
         if: steps.list-changed.outputs.changed == 'true'
         run: ct install --config .github/linters/ct.yaml
