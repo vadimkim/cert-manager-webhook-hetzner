@@ -13,7 +13,10 @@ certManager:
   serviceAccountName: cert-manager
 
 image:
-  repository: zmejg/cert-manager-webhook-hetzner
+  registry: ghcr.io
+  repository: vadimkim/cert-manager-webhook-hetzner
+  # Overrides the image tag whose default is {{ printf "v%s" .Chart.AppVersion }}
+  tag: ""
   pullPolicy: IfNotPresent
 
 nameOverride: ""
