@@ -38,6 +38,7 @@ helm uninstall --namespace cert-manager cert-manager-webhook-hetzner
 ## Issuer
 
 Create a `ClusterIssuer` or `Issuer` resource as following:
+(Keep in Mind that the Example uses the Staging URL from Let's Encrypt. Look at [Getting Start](https://letsencrypt.org/getting-started/) for using the normal Let's Encrypt URL.)
 ```yaml
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
