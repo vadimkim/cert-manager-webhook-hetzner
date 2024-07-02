@@ -1,4 +1,4 @@
-FROM golang:1.19.5-alpine AS build_deps
+FROM golang:1.22-alpine3.20 AS build_deps
 ARG TARGETARCH
 
 RUN apk add --no-cache git
@@ -17,7 +17,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOARCH=$TARGETARCH go build -o webhook -ldflags '-w -extldflags "-static"' .
 
-FROM alpine:3.17
+FROM alpine:3.20
 LABEL maintainer="vadimkim <vadim@ant.ee>"
 LABEL org.opencontainers.image.source="https://github.com/vadimkim/cert-manager-webhook-hetzner"
 
