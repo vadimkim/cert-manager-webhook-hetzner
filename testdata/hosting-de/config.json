@@ -1,0 +1,5 @@
+{
+  "secretName": "hosting-de-secret",
+  "zoneName": "example.com",
+  "apiUrl" : "https://secure.hosting.de/api/dns/v1/json/recordsUpdate"
+}

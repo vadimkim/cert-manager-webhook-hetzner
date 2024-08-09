@@ -1,4 +1,4 @@
-module github.com/vadimkim/cert-manager-webhook-hetzner
+module github.com/josobrate/cert-manager-webhook-hosting-de
 
 go 1.22.0
 

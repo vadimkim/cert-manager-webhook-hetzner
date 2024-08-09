@@ -26,8 +26,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            zmejg/cert-manager-webhook-hetzner
-            ghcr.io/vadimkim/cert-manager-webhook-hetzner
+            josobrate/cert-manager-webhook-hosting-de
+            ghcr.io/josobrate/cert-manager-webhook-hosting-de
           tags: |
             type=ref,event=branch
             type=ref,event=pr

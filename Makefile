@@ -1,4 +1,4 @@
-IMAGE_NAME := "cert-manager-webhook-hetzner"
+IMAGE_NAME := "cert-manager-webhook-hosting-de"
 IMAGE_TAG := "latest"
 
 OUT := $(shell pwd)/deploy
@@ -14,7 +14,7 @@ build:
 .PHONY: rendered-manifest.yaml
 rendered-manifest.yaml:
 	helm template \
-	    cert-manager-webhook-hetzner \
+	    cert-manager-webhook-hosting-de \
         --set image.repository=$(IMAGE_NAME) \
         --set image.tag=$(IMAGE_TAG) \
 		--namespace cert-manager \

@@ -1,0 +1,21 @@
+apiVersion: v2
+name: cert-manager-webhook-hosting-de
+version: 1.3.1
+appVersion: "1.3.0"
+kubeVersion: ">= 1.22.0-0"
+description: Allow cert-manager to solve DNS challenges using hosting.de DNS API
+home: https://github.com/josobrate/cert-manager-webhook-hosting-de
+icon: https://raw.githubusercontent.com/cert-manager/cert-manager/master/logo/logo-small.png
+keywords:
+  - cert-manager
+  - hosting.de
+  - kube-lego
+  - letsencrypt
+  - tls
+sources:
+  - https://github.com/josobrate/cert-manager-webhook-hosting-de
+maintainers:
+  - name: josobrate
+    email: josip.nedic@hotmail.de
+annotations:
+  artifacthub.io/license: Apache-2.0

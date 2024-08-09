@@ -1,0 +1,76 @@
+---
+# Create a selfsigned Issuer, in order to create a root CA certificate for
+# signing webhook serving certificates
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "cert-manager-webhook-hosting-de.selfSignedIssuer" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "cert-manager-webhook-hosting-de.name" . }}
+    chart: {{ include "cert-manager-webhook-hosting-de.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selfSigned: {}
+
+---
+
+# Generate a CA Certificate used to sign certificates for the webhook
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "cert-manager-webhook-hosting-de.rootCACertificate" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "cert-manager-webhook-hosting-de.name" . }}
+    chart: {{ include "cert-manager-webhook-hosting-de.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  secretName: {{ include "cert-manager-webhook-hosting-de.rootCACertificate" . }}
+  duration: 43800h0m0s # 5y
+  issuerRef:
+    name: {{ include "cert-manager-webhook-hosting-de.selfSignedIssuer" . }}
+  commonName: "ca.cert-manager-webhook-hosting-de.cert-manager"
+  isCA: true
+
+---
+
+# Create an Issuer that uses the above generated CA certificate to issue certs
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "cert-manager-webhook-hosting-de.rootCAIssuer" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "cert-manager-webhook-hosting-de.name" . }}
+    chart: {{ include "cert-manager-webhook-hosting-de.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ca:
+    secretName: {{ include "cert-manager-webhook-hosting-de.rootCACertificate" . }}
+
+---
+
+# Finally, generate a serving certificate for the webhook to use
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "cert-manager-webhook-hosting-de.servingCertificate" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "cert-manager-webhook-hosting-de.name" . }}
+    chart: {{ include "cert-manager-webhook-hosting-de.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  secretName: {{ include "cert-manager-webhook-hosting-de.servingCertificate" . }}
+  duration: 8760h0m0s # 1y
+  issuerRef:
+    name: {{ include "cert-manager-webhook-hosting-de.rootCAIssuer" . }}
+  dnsNames:
+    - {{ include "cert-manager-webhook-hosting-de.fullname" . }}
+    - {{ include "cert-manager-webhook-hosting-de.fullname" . }}.{{ .Release.Namespace }}
+    - {{ include "cert-manager-webhook-hosting-de.fullname" . }}.{{ .Release.Namespace }}.svc

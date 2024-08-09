@@ -4,7 +4,7 @@ target-branch: master
 chart-dirs:
   - deploy
 chart-repos:
-  - cert-manager-webhook-hetzner=https://vadimkim.github.io/cert-manager-webhook-hetzner
+  - cert-manager-webhook-hosting-de=https://josobrate.github.io/cert-manager-webhook-hosting-de
 helm-extra-args: --timeout 600s
 excluded-charts:
 additional-commands:
