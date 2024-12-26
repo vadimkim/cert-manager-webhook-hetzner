@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cert-manager/cert-manager/test/acme/dns"
+	dns "github.com/cert-manager/cert-manager/test/acme"
 )
 
 var (
