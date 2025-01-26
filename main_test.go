@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/cert-manager/cert-manager/test/acme/dns"
+	acmetest "github.com/cert-manager/cert-manager/test/acme"
 )
 
 var (
@@ -20,11 +20,11 @@ func TestRunsSuite(t *testing.T) {
 
 	fqdn = GetRandomString(20) + "." + zone
 
-	fixture := dns.NewFixture(&hetznerDNSProviderSolver{},
-		dns.SetResolvedZone(zone),
-		dns.SetResolvedFQDN(fqdn),
-		dns.SetAllowAmbientCredentials(false),
-		dns.SetManifestPath("testdata/hetzner"),
+	fixture := acmetest.NewFixture(&hetznerDNSProviderSolver{},
+		acmetest.SetResolvedZone(zone),
+		acmetest.SetResolvedFQDN(fqdn),
+		acmetest.SetAllowAmbientCredentials(false),
+		acmetest.SetManifestPath("testdata/hetzner"),
 		//		dns.SetBinariesPath("kubebuilder/bin"),
 	)
 
