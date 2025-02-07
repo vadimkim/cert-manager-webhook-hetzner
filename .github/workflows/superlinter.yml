@@ -6,8 +6,8 @@ name: Lint Code Base
 on:
   pull_request:
     paths:
-      - 'deploy/**'
-      - '.github/**'
+      - "deploy/**"
+      - ".github/**"
 
 jobs:
   build:
@@ -29,7 +29,9 @@ jobs:
           fetch-depth: 0
 
       - name: Lint Code Base
-        uses: docker://github/super-linter:slim-v4
+        uses: docker://ghcr.io/super-linter/super-linter:slim-v7.2.1
+        with:
+          args: --timeout=30m
         env:
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -37,7 +39,8 @@ jobs:
           VALIDATE_ALL_CODEBASE: false
           VALIDATE_BASH: false
           VALIDATE_JSCPD: false
-          VALIDATE_KUBERNETES_KUBEVAL: false
+          VALIDATE_CHECKOV: false
+          VALIDATE_KUBERNETES_KUBECONFORM: false
           VALIDATE_PYTHON: false
           VALIDATE_PYTHON_FLAKE8: false
           VALIDATE_PYTHON_BLACK: false
