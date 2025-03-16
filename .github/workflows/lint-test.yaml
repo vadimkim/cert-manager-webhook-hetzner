@@ -42,8 +42,6 @@ jobs:
       - name: Create kind cluster
         if: steps.list-changed.outputs.changed == 'true'
         uses: helm/kind-action@v1
-        with:
-          version: "v0.31.4"
 
       - name: Install cert-manager
         if: steps.list-changed.outputs.changed == 'true'
