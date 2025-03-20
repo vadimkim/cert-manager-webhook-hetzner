@@ -6,7 +6,6 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"regexp"
 	"strings"
 
 	"encoding/json"
@@ -212,13 +211,18 @@ with record name that is FQDN without zone name. Subdomains is a part of
 record name and is separated by "."
 */
 func recordName(fqdn, domain string) string {
-	r := regexp.MustCompile("(.+)\\." + domain + "\\.")
-	name := r.FindStringSubmatch(fqdn)
-	if len(name) != 2 {
-		klog.Errorf("splitting domain name %s failed!", fqdn)
+	// Ensure fqdn and domain do not have trailing dots
+	fqdn = strings.TrimSuffix(fqdn, ".")
+	domain = strings.TrimSuffix(domain, ".")
+
+	// Ensure fqdn ends with domain
+	if !strings.HasSuffix(fqdn, "."+domain) {
+		klog.Errorf("FQDN %s does not belong to domain %s", fqdn, domain)
 		return ""
 	}
-	return name[1]
+
+	// Extract everything before the domain
+	return strings.TrimSuffix(fqdn, "."+domain)
 }
 
 func callDnsApi(url, method string, body io.Reader, config internal.Config) ([]byte, error) {
