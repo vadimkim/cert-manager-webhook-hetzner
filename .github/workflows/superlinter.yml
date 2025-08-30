@@ -18,7 +18,7 @@ jobs:
     # Grant status permission for MULTI_STATUS #
     ############################################
     permissions:
-      contents: read
+      contents: write
       packages: read
       statuses: write
 
@@ -29,7 +29,7 @@ jobs:
           fetch-depth: 0
 
       - name: Lint Code Base
-        uses: docker://ghcr.io/super-linter/super-linter:slim-v7.2.1
+        uses: docker://ghcr.io/super-linter/super-linter:slim-v8.1.0
         with:
           args: --timeout=30m
         env:
