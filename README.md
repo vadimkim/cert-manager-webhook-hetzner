@@ -129,7 +129,7 @@ DNS01 webhook.**
 First, you need to have Hetzner account with access to DNS control panel. You need to create API token and have a
 registered and verified DNS zone there.
 Then you need to replace `zoneName` parameter at `testdata/hetzner/config.json` file with actual one.
-You also must encode your api token into base64 and put the hash into `testdata/hetzner/hetzner-secret.yml` file.
+You also must encode your API token into base64 and put the hash into `testdata/hetzner/hetzner-secret.yml` file.
 
 You can then run the test suite with:
 
