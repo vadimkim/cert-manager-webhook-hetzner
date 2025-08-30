@@ -4,6 +4,31 @@ entries:
   - annotations:
       artifacthub.io/license: Apache-2.0
     apiVersion: v2
+    appVersion: 1.4.0
+    created: "2025-08-30T19:26:10.419760496Z"
+    description: Allow cert-manager to solve DNS challenges using Hetzner DNS API
+    digest: 22701aa10a2b4504d8f7f922648c9672e1362e48593ceb9e70e066f635740aee
+    home: https://github.com/vadimkim/cert-manager-webhook-hetzner
+    icon: https://raw.githubusercontent.com/cert-manager/cert-manager/master/logo/logo-small.png
+    keywords:
+    - cert-manager
+    - hetzner
+    - kube-lego
+    - letsencrypt
+    - tls
+    kubeVersion: '>= 1.22.0-0'
+    maintainers:
+    - email: vadim@ant.ee
+      name: vadimkim
+    name: cert-manager-webhook-hetzner
+    sources:
+    - https://github.com/vadimkim/cert-manager-webhook-hetzner
+    urls:
+    - https://github.com/vadimkim/cert-manager-webhook-hetzner/releases/download/cert-manager-webhook-hetzner-1.4.0/cert-manager-webhook-hetzner-1.4.0.tgz
+    version: 1.4.0
+  - annotations:
+      artifacthub.io/license: Apache-2.0
+    apiVersion: v2
     appVersion: 1.3.3
     created: "2025-04-02T22:31:05.1268307+03:00"
     description: Allow cert-manager to solve DNS challenges using Hetzner DNS API
@@ -105,4 +130,4 @@ entries:
     urls:
     - https://vadimkim.github.io/cert-manager-webhook-hetzner/cert-manager-webhook-hetzner-1.1.0.tgz
     version: 1.1.0
-generated: "2025-04-02T22:31:05.125598533+03:00"
+generated: "2025-08-30T19:26:10.419793738Z"
