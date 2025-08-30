@@ -66,7 +66,7 @@ spec:
 
     solvers:
       - dns01:
-          webhook: 
+          webhook:
             groupName: hetzner.cert-mananger-webhook.noshoes.xyz
             solverName: hetzner
             config:
