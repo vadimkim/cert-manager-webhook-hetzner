@@ -19,8 +19,7 @@ Follow the [instructions](https://cert-manager.io/docs/installation/) using the 
 #### Using public helm chart
 ```bash
 helm repo add cert-manager-webhook-hetzner https://vadimkim.github.io/cert-manager-webhook-hetzner
-# Replace the groupName value with your desired domain
-helm install --namespace cert-manager cert-manager-webhook-hetzner cert-manager-webhook-hetzner/cert-manager-webhook-hetzner --set groupName=acme.yourdomain.tld
+helm install --namespace cert-manager cert-manager-webhook-hetzner cert-manager-webhook-hetzner/cert-manager-webhook-hetzner
 ```
 
 #### From local checkout
@@ -58,9 +57,8 @@ spec:
 
     solvers:
       - dns01:
-          webhook:
-            # This group needs to be configured when installing the helm package, otherwise the webhook won't have permission to create an ACME challenge for this API group.
-            groupName: acme.yourdomain.tld
+          webhook: 
+            groupName: hetzner.cert-mananger-webhook.noshoes.xyz
             solverName: hetzner
             config:
               secretName: hetzner-secret
