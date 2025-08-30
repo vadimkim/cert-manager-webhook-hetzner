@@ -23,7 +23,7 @@ service:
 secretName:
   - hetzner-secret
 
-resources: { }
+resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -35,11 +35,11 @@ resources: { }
   #  cpu: 100m
 #  memory: 128Mi
 
-nodeSelector: { }
+nodeSelector: {}
 
-tolerations: [ ]
+tolerations: []
 
-affinity: { }
+affinity: {}
 
 # Use these variables to configure the HTTP_PROXY environment variables
 # http_proxy: "http://proxy:8080"
@@ -49,7 +49,7 @@ affinity: { }
 securityContext:
   allowPrivilegeEscalation: false
   capabilities:
-    drop: [ "ALL" ]
+    drop: ["ALL"]
 
 podSecurityContext:
   runAsGroup: 1000
