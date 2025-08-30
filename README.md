@@ -1,11 +1,11 @@
 # ACME webhook for Hetzner DNS API
 
 This solver can be used when you want to use cert-manager with Hetzner DNS API. API documentation
-is [here](https://dns.hetzner.com/api-docs)
+is [Hetzner DNS API docs](https://dns.hetzner.com/api-docs)
 
 ## Requirements
 
-- [go](https://golang.org/) >= 1.13.0
+- [go](https://golang.org/) >= 1.25.0
 - [helm](https://helm.sh/) >= v3.0.0
 - [kubernetes](https://kubernetes.io/) >= v1.14.0
 - [cert-manager](https://cert-manager.io/) >= 0.12.0
