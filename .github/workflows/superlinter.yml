@@ -27,6 +27,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Lint Code Base
         uses: docker://ghcr.io/super-linter/super-linter:slim-v8.1.0
