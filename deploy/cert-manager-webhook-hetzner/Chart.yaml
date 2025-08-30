@@ -1,7 +1,7 @@
 apiVersion: v2
 name: cert-manager-webhook-hetzner
-version: 1.3.3
-appVersion: "1.3.3"
+version: 1.3.4
+appVersion: "1.3.4"
 kubeVersion: ">= 1.22.0-0"
 description: Allow cert-manager to solve DNS challenges using Hetzner DNS API
 home: https://github.com/vadimkim/cert-manager-webhook-hetzner
